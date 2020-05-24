@@ -1,1 +1,5 @@
-module.exports = { productRoute: require('./products'), categoryRoute: require('./category') };
+module.exports = {
+    productRoute: require('./products'),
+    categoryRoute: require('./category'),
+    userRoute: require('./user'),
+};
