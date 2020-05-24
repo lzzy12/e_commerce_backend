@@ -1,0 +1,28 @@
+{
+  "name": "e_commerce_backend",
+  "version": "1.0.0",
+  "description": "E-commerce backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lzzy12/e_commerce_backend.git"
+  },
+  "author": "Shivam Jha",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/lzzy12/e_commerce_backend/issues"
+  },
+  "homepage": "https://github.com/lzzy12/e_commerce_backend#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.9.15",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
