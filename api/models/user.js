@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 const {addressSchema} = require('./address');
 const {OrderSchema} = require('./order');
-const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/g
+
+const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/g
+
 const userSchema = new Schema({
     email: {
         type: String,
@@ -11,11 +13,11 @@ const userSchema = new Schema({
         required: true,
         unique: true,
     },
-    firstname: {
+    first_name: {
         type: String,
         required: true,
     },
-    lastname: {
+    last_name: {
         type: String,
         required: true,
     },
@@ -28,6 +30,7 @@ const userSchema = new Schema({
         type: String,
         maxlength: 15,
         match: phoneRegex,
+        minlength: 5
     },
     addresses: [addressSchema],
     orders: [OrderSchema]

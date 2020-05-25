@@ -1,5 +1,4 @@
 const { Schema, model, Types } = require('mongoose');
-const { Category } = require('./category');
 
 const productSchema = new Schema({
     name: {
@@ -42,7 +41,7 @@ const productSchema = new Schema({
         type: Number,
         required: true,
     },
-    categories: [{ type: Types.ObjectId, ref: Category }],
+    categories: [{ type: Types.ObjectId, ref: 'Category' }],
     sizes: [{
         type: String,
         enum: [
