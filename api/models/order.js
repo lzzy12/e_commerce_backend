@@ -28,12 +28,14 @@ const OrderSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['reviewing',
+        enum: [
+            'reviewing',
             'accepted',
             'dispatched',
             'outForDelivery',
             'delivered',
-            'cancelled',]
+            'cancelled',
+        ]
     },
     user: {
         type: Types.ObjectId,

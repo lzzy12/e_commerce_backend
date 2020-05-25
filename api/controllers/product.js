@@ -7,7 +7,7 @@ exports.createProduct = (req, res, next) => {
         medias: req.files.map((value) =>{
             return {
                 mimeType: value.mimetype,
-                url: value.path
+                url: `/api/uploads/${value.filename}`
             }
         })
     });

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const phone_regex = /\d{3}-\d{3}-\d{4}/;
+const phone_regex = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
 const addressSchema = new Schema({
     name: {
         type: String,

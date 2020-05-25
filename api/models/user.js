@@ -32,6 +32,10 @@ const userSchema = new Schema({
         match: phoneRegex,
         minlength: 5
     },
+    role: {
+      type: Number,
+      enum: [0, 1]    // { 0: Normal user, 1: Admin }
+    },
     addresses: [addressSchema],
     orders: [OrderSchema]
 });

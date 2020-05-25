@@ -5,10 +5,35 @@ const jwt = require('jsonwebtoken');
 function getToken(user) {
     return jwt.sign({
         email: user.email,
-        id: user._id
+        id: user._id,
     }, process.env.JWT_SECRET_KEY, {
         expiresIn: "6h"
     });
+}
+
+exports.isAuthenticated = (req, res, next) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        req.body.profile = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        next();
+    } catch(e){
+        res.status(403).json({error: {message: "Not Authenticated"}});
+    }
+}
+
+exports.isAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findOne({_id: req.body.profile.id}).select('role').exec();
+        if (user.role === 1)
+        {
+            req.body.profile.admin = true;
+            next();
+        } else {
+            res.status(403).json({error: {message: "Permission denied"}})
+        }
+    } catch(error) {
+        res.status(400).json(error);
+    }
 }
 
 exports.registerUser = (req, res, next) => {
@@ -25,7 +50,15 @@ exports.registerUser = (req, res, next) => {
                 }
                 const body = req.body;
                 body.password = hash;
-                const user = User(body);
+                const user = User({
+                    email: body.email,
+                    first_name: body.first_name,
+                    last_name: body.last_name,
+                    password: body.password,
+                    phone_num: body.phone_num,
+                    role: 0,
+                    addresses: body.addresses,
+                });
                 user.save().then(result => {
                     const {email, first_name, last_name, phone_num, addresses} = user;
                     res.status(201).json({
