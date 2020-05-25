@@ -24,13 +24,9 @@ exports.isAuthenticated = (req, res, next) => {
 exports.isAdmin = async (req, res, next) => {
     try {
         const user = await User.findOne({_id: req.body.profile.id}).select('role').exec();
-        if (user.role === 1)
-        {
-            req.body.profile.admin = true;
-            next();
-        } else {
-            res.status(403).json({error: {message: "Permission denied"}})
-        }
+        req.body.profile.admin = (user.role === 1)
+        console.log(req.body.profile.admin);
+        next();
     } catch(error) {
         res.status(400).json(error);
     }

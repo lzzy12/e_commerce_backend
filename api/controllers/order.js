@@ -13,7 +13,19 @@ exports.getOrderById = (req, res) => {
 }
 
 exports.getAllOrder = (req, res) => {
-    Order.find().select('-__v').exec().then(orders => {
+    if(req.body.profile.admin === true){
+        Order.find().select('-__v').exec().then(orders => {
+            res.status(200).json(orders);
+        }).catch(error => {
+            res.status(500).json(error);
+        });
+    } else{
+        res.status(403).json({error: {message: "Permission denied"}});
+    }
+}
+
+exports.getAllOrderByUser = (req, res) => {
+    Order.find({user: req.body.profile.id}).select('-__v').exec().then(orders => {
         res.status(200).json(orders);
     }).catch(error => {
         res.status(500).json(error);
@@ -29,7 +41,7 @@ exports.updateStatus = (req, res) => {
     });
 }
 
-exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res, next) => {
     try {
         const order = Order(
             {
@@ -40,7 +52,8 @@ exports.createOrder = async (req, res) => {
             }
         );
         await order.save();
-        res.status(201).json(order);
+        req.body.order = order;
+        next();
     } catch (e) {
         res.status(400).json(e);
     }
