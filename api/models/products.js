@@ -1,5 +1,7 @@
 const { Schema, model, Types } = require('mongoose');
 
+const mimeTypeRegex = /^[-\w.]+\/[-\w.]+$/;
+
 const productSchema = new Schema({
     name: {
         maxLength: 30,
@@ -28,13 +30,12 @@ const productSchema = new Schema({
     medias: [{
         url: {
             required: true,
-            validate: new RegExp(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi),
             type: String,
         },
-        type: {
+        mimeType: {
             required: true,
             type: String,
-            enum: ['image', 'video']
+            match: mimeTypeRegex,
         }
     }],
     stock: {

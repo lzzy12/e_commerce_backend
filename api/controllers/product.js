@@ -1,8 +1,16 @@
-const mongoose = require('mongoose');
 const { Product } = require('../models/models');
 
+
 exports.createProduct = (req, res, next) => {
-    const product = new Product(req.body);
+    const product = new Product({
+        ...req.body,
+        medias: req.files.map((value) =>{
+            return {
+                mimeType: value.mimetype,
+                url: value.path
+            }
+        })
+    });
     product.save().then(result => {
         res.status(201).json(product);
     }).catch(error => {
@@ -11,7 +19,7 @@ exports.createProduct = (req, res, next) => {
 }
 
 exports.getAll = (req, res, next) => {
-    Product.find({}).then(result => {
+    Product.find().select('-__v').then(result => {
         res.status(200).json(result);
     });
 }

@@ -36,7 +36,7 @@ const OrderSchema = new Schema({
             'cancelled',]
     },
     user: {
-        type: ObjectId,
+        type: Types.ObjectId,
         ref: 'User'
     },
 }, {timestamps: true});
