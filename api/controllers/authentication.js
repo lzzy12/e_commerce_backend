@@ -21,7 +21,7 @@ exports.isAuthenticated = (req, res, next) => {
     }
 }
 
-exports.isAdmin = async (req, res, next) => {
+exports.checkAdmin = async (req, res, next) => {
     try {
         const user = await User.findOne({_id: req.body.profile.id}).select('role').exec();
         req.body.profile.admin = (user.role === 1)

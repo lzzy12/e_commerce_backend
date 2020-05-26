@@ -32,13 +32,28 @@ exports.getAllOrderByUser = (req, res) => {
     });
 }
 
-exports.updateStatus = (req, res) => {
-    Order.updateOne({_id: req.params.order_id}, {$set: {status: req.body.status}}, (err, order) => {
-        if (err) {
-            return res.status(400).json(err);
+exports.updateStatus = async (req, res) => {
+    try {
+        if (req.body.admin) {
+            const updatedOrder = await Order.findOneAndUpdate({_id: req.params.order_id},
+                {$set: {status: req.body.status}}, {new: true});
+            if (updatedOrder)
+                res.status(201).json(updatedOrder);
+            else
+                res.status(404).json({error: {message: "No such order found"}});
+        } else if (req.body.status === "cancelled") {
+            const updatedOrder = await Order.findOneAndUpdate({user: req.body.profile.id, _id: req.params.order_id},
+                {$set: {status: req.body.status}}, {new: true});
+            if (updatedOrder)
+                res.status(201).json(updatedOrder);
+            else
+                res.status(404).json({error: {message: "No such order found"}});
+        } else {
+            res.status(400).json({error: {message: "Not an admin neither a cancel operation!"}});
         }
-        res.status(201).json({message: "Update successful"});
-    });
+    } catch(e){
+        res.status(500).json(e);
+    }
 }
 
 exports.createOrder = async (req, res, next) => {

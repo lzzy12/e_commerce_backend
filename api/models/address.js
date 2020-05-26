@@ -33,6 +33,10 @@ const addressSchema = new Schema({
     address_type: {
         type: String,
         enum: ['home', 'office'],
+    },
+    user: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
     }
 });
 

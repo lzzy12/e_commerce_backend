@@ -28,4 +28,5 @@ router.post('/products', upload.array('medias'), productController.createProduct
 
 router.get('/products/:productId', productController.getProductById);
 
+router.put('/products/:productId')
 module.exports = router;
