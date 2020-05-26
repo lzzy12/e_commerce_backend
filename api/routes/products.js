@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {productController, middleware} = require('../controllers/controller');
+const {productController} = require('../controllers/controller');
 const multer = require('multer');
 const uuid = require('uuid');
 

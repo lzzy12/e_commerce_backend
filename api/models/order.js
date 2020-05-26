@@ -41,6 +41,10 @@ const OrderSchema = new Schema({
         type: Types.ObjectId,
         ref: 'User'
     },
+    promo: {
+        type: Types.ObjectId,
+        ref: 'Promo'
+    },
 }, {timestamps: true});
 
 module.exports = {Order: mongoose.model('Order', OrderSchema), OrderSchema, CartProductSchema};

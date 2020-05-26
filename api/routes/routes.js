@@ -3,4 +3,5 @@ module.exports = {
     categoryRoute: require('./category'),
     userRoute: require('./user'),
     orderRoute: require('./order'),
+    promoRoute: require('./promo'),
 };

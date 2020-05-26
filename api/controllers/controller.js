@@ -4,4 +4,5 @@ module.exports = {
     authController: require('./authentication'),
     userController: require('./user'),
     orderController: require('./order'),
+    promoController: require('./promo'),
 }

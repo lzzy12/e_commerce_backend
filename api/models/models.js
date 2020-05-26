@@ -3,3 +3,4 @@ exports.Category = require('./category');
 exports.User = require('./user');
 exports.Address = require('./address');
 exports.Order = require('./order').Order;
+exports.Promo = require('./promo').Promo;

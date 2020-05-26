@@ -20,13 +20,34 @@ exports.isAuthenticated = (req, res, next) => {
         res.status(403).json({error: {message: "Not Authenticated"}});
     }
 }
-
-exports.checkAdmin = async (req, res, next) => {
+// Checks if user is an admin; always calls next(); req.body.profile.admin
+// contains a boolean value indicating if user is an admin
+exports.checkAdmin = (req, res, next) => {
     try {
-        const user = await User.findOne({_id: req.body.profile.id}).select('role').exec();
-        req.body.profile.admin = (user.role === 1)
-        console.log(req.body.profile.admin);
-        next();
+        User.findOne({_id: req.body.profile.id}).select('role').exec((err, user) =>{
+            if (err) return res.status(400).json(err);
+            req.body.profile.admin = (user.role === 1);
+            next();
+        });
+    } catch(error) {
+        res.status(400).json(error);
+    }
+}
+
+// Checks if user is an admin user; If not breaks the
+// request flow with 403 status code in response; calls next if user is admin
+exports.isAdmin = (req, res, next) => {
+    try {
+        console.log(req.body.profile.id);
+        User.findOne({_id: req.body.profile.id}).select('role').exec((err, user) =>{
+            if (err) return res.status(400).json(err);
+            if (user) {
+                if (user.role === 1) {
+                    req.body.profile.admin = true;
+                    next();
+                } else res.status(403).json({error: {message: "Permission denied"}});
+            }
+        });
     } catch(error) {
         res.status(400).json(error);
     }
@@ -46,23 +67,28 @@ exports.registerUser = (req, res, next) => {
                 }
                 const body = req.body;
                 body.password = hash;
-                const user = User({
-                    email: body.email,
-                    first_name: body.first_name,
-                    last_name: body.last_name,
-                    password: body.password,
-                    phone_num: body.phone_num,
-                    role: 0,
-                    addresses: body.addresses,
-                });
-                user.save().then(result => {
-                    const {email, first_name, last_name, phone_num, addresses} = user;
-                    res.status(201).json({
-                        token: getToken(result),
-                        email, first_name, last_name, phone_num, addresses
+                try {
+                    const user = new User({
+                        email: body.email,
+                        first_name: body.first_name,
+                        last_name: body.last_name,
+                        password: body.password,
+                        phone_num: body.phone_num,
+                        role: 0,
+                        addresses: body.addresses,
                     });
-                });
-            })
+                    user.save(err => {
+                        if (err) return res.status(400).json(err);
+                        const {email, first_name, last_name, phone_num, addresses} = user;
+                        res.status(201).json({
+                            token: getToken(user),
+                            email, first_name, last_name, phone_num, addresses
+                        });
+                    });
+                } catch(e){
+                    res.status(400).json(e);
+                }
+            });
 
         }
     }).catch(err => {
