@@ -10,10 +10,10 @@ services:
     build: .
     environment:
       - MONGO_DB_URL=mongodb://mongo:27017/e_commerce
-      - PORT=8080
+      - PORT=3000
       - DATA_STORAGE_LOCATION=/data/uploads
     env_file: config.env
-    ports: 8080:80
+    ports: 3000:8000
     depends_on: mongo
     volumes: app-data:/data/uploads
 
