@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes: mongodb-data:/data/db
+
+  app:
+    build: .
+    environment:
+      - MONGO_DB_URL=mongodb://mongo:27017/e_commerce
+      - PORT=8080
+      - DATA_STORAGE_LOCATION=/data/uploads
+    env_file: config.env
+    ports: 8080:80
+    depends_on: mongo
+    volumes: app-data:/data/uploads
+
+volumes:
+  mongodb-data:
+  app-data:
