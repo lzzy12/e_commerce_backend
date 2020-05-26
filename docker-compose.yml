@@ -1,10 +1,11 @@
-version: "3.8"
+version: "3.7"
 services:
   mongo:
     image: mongo:latest
     ports:
       - 27017:27017
-    volumes: mongodb-data:/data/db
+    volumes:
+      - mongodb-data:/data/db
 
   app:
     build: .
@@ -13,9 +14,12 @@ services:
       - PORT=3000
       - DATA_STORAGE_LOCATION=/data/uploads
     env_file: config.env
-    ports: 3000:8000
-    depends_on: mongo
-    volumes: app-data:/data/uploads
+    ports:
+      - 8000:3000
+    depends_on:
+      - mongo
+    volumes:
+      - app-data:/data/uploads
 
 volumes:
   mongodb-data:
