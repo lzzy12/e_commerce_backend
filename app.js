@@ -19,7 +19,8 @@ mongoose.connect(MONGO_DB_URL || 'mongodb://localhost:27017/test',
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 app.use('/api/uploads/:filename', (req, res, next) => {
-    const filePath = process.env.DATA_STORAGE_LOCATION || path.join(__dirname, 'uploads', req.params.filename);
+    const rootDir = process.env.DATA_STORAGE_LOCATION || path.join(__dirname, 'uploads');
+    const filePath = path.join(rootDir, req.params.filename);
     if (!fs.existsSync(filePath))
         return res.status(404).json({error: {message: 'File not found'}});
     res.status(200).sendFile(filePath);
