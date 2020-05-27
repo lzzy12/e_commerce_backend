@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {productController} = require('../controllers/controller');
+const {productController, paginate} = require('../controllers/controller');
+const {Product} = require('../models/models');
 const multer = require('multer');
 const uuid = require('uuid');
 
@@ -22,7 +23,7 @@ const upload = multer({
 });
 
 
-router.get('/products', productController.getAll);
+router.get('/products', paginate(Product), productController.getAll);
 
 router.post('/products', upload.array('medias'), productController.createProduct);
 

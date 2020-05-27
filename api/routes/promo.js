@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const {promoController, authController} = require('../controllers/controller');
+const {paginate, promoController, authController} = require('../controllers/controller');
+const {Promo} = require('../models/models');
 const multer = require('multer');
 const uuid = require('uuid');
-const path = require('path');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -30,7 +30,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-router.get('/promo', promoController.getAllPromo);
+router.get('/promo', paginate(Promo), promoController.getAllPromo);
 
 router.get('/promo/:id', promoController.getPromoById);
 
@@ -38,6 +38,6 @@ router.post('/promo', authController.isAuthenticated, authController.isAdmin,
     upload.single('pic'), promoController.createPromo);
 
 router.put('/promo/:id', authController.isAuthenticated, authController.isAdmin,
-    upload.single('pic'),promoController.updatePromo);
+    upload.single('pic'), promoController.updatePromo);
 
 module.exports = router;

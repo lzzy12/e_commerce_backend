@@ -3,23 +3,22 @@ const { Category } = require('../models/models');
 
 // Lists all the categories if `only` is not defined. 
 //If `only` is defined lists only categories with ids in only list.
-exports.getAllOrByIdList = (req, res, next) => {
-    if (req.body.only && req.body.only instanceof Array) {
-        Category.find({
-            _id: {
-                $in: req.body.only
-            }
-        }).then(result => {
-            return res.status(200).json(result);
-        }).catch(error => {
-            return res.status(400).json(error);
-        });
-    } else {
-        Category.find({}).then(result => {
-            res.status(200).json(result);
-        }).catch(error => {
-            res.status(400).json(error);
-        });
+exports.getAllOrByIdList = async (req, res, next) => {
+    try {
+        if (req.body.only && req.body.only instanceof Array) {
+            await Category.find({
+                _id: {
+                    $in: req.body.only
+                }
+            }).limit(res.limits.pageSize)
+                .skip(res.limits.startIndex).select('-__v').exec();
+        } else {
+            res.result.results = await Category.find().limit(res.limits.pageSize)
+                .skip(res.limits.startIndex).select('-__v').exec();
+        }
+        res.status(200).json(res.result);
+    } catch (e) {
+        res.status(500).json(e);
     }
 }
 

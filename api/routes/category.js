@@ -1,7 +1,8 @@
 const router = require('express').Router();
-const {categoryController } = require('../controllers/controller');
+const {categoryController, paginate } = require('../controllers/controller');
+const {Category} = require('../models/models');
 
-router.get('/category', categoryController.getAllOrByIdList);
+router.get('/category', paginate(Category), categoryController.getAllOrByIdList);
 
 router.post('/category', categoryController.createCategory);
 

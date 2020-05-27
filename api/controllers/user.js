@@ -32,3 +32,12 @@ exports.editAddress = async  (req, res, next) => {
         res.status(400).json(e);
     }
 }
+
+exports.getAllUsers = async (req, res, next) => {
+    try{
+        res.result.results  = await User.find().limit(res.limits.pageSize).skip(res.limits.startIndex).select('-__v').exec();
+        res.status(200).json(res.result);
+    } catch(e){
+        res.status(500).json(e);
+    }
+}

@@ -1,12 +1,16 @@
 const {Promo} = require('../models/models');
 
-exports.getAllPromo = (req, res) => {
-    Promo.find().select('-__v').exec((error, promos) => {
-       if (error){
-           return res.status(400).json(error);
-       }
-       res.status(200).json(promos);
-    });
+exports.getAllPromo = async (req, res) => {
+    try {
+        res.result.results = await Promo.find()
+            .limit(res.limits.pageSize)
+            .skip(res.limits.startIndex)
+            .select('-__v').exec();
+
+        res.status(200).json(res.result);
+    } catch (e) {
+        res.status(500).json(e);
+    }
 }
 
 exports.getPromoById = (req, res) => {

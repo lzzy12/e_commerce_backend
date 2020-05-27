@@ -18,10 +18,9 @@ exports.createProduct = (req, res, next) => {
     });
 }
 
-exports.getAll = (req, res, next) => {
-    Product.find().select('-__v').then(result => {
-        res.status(200).json(result);
-    });
+exports.getAll = async (req, res, next) => {
+    res.result.results = await Product.find().limit(res.limits.pageSize).skip(res.limits.startIndex).select('-__v').exec();
+    res.status(200).json(res.result);
 }
 
 exports.getProductById = (req, res, next) => {

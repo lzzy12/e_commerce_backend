@@ -12,15 +12,16 @@ exports.getOrderById = (req, res) => {
     });
 }
 
-exports.getAllOrder = (req, res) => {
-    if(req.body.profile.admin === true){
-        Order.find().select('-__v').exec().then(orders => {
-            res.status(200).json(orders);
-        }).catch(error => {
-            res.status(500).json(error);
-        });
-    } else{
-        res.status(403).json({error: {message: "Permission denied"}});
+exports.getAllOrder = async (req, res) => {
+    try {
+        if (req.body.profile.admin === true) {
+            res.result.results = await Order.find().limit(res.limits.pageSize).skip(res.limits.startIndex).select('-__v').exec();
+        } else {
+            res.result.results = await Order.find({user: req.body.profile.id}).select('-__v').exec();
+        }
+        res.status(200).json(res.result);
+    } catch (error) {
+        res.status(500).json(error);
     }
 }
 
@@ -51,7 +52,7 @@ exports.updateStatus = async (req, res) => {
         } else {
             res.status(400).json({error: {message: "Not an admin neither a cancel operation!"}});
         }
-    } catch(e){
+    } catch (e) {
         res.status(500).json(e);
     }
 }
