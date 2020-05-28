@@ -4,4 +4,5 @@ module.exports = {
     userRoute: require('./user'),
     orderRoute: require('./order'),
     promoRoute: require('./promo'),
+    stripeRoute: require('./stripePayment'),
 };

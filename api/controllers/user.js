@@ -4,9 +4,9 @@ exports.addOrder = async (req, res, next) => {
     try {
         await User.findOneAndUpdate(
             {_id: req.body.profile.id},
-            {$push: {orders: req.body.order}},
+            {$push: {orders: req.result.order}},
         ).exec();
-        res.status(200).json(req.body.order);
+        res.status(200).json(res.result);
     } catch(e){
         res.status(400).json(e);
     }

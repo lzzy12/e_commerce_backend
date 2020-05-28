@@ -1,5 +1,5 @@
 const app = require('express')();
-const {productRoute, categoryRoute, userRoute, orderRoute, promoRoute} = require('./api/routes/routes');
+const {productRoute, categoryRoute, userRoute, orderRoute, promoRoute, stripeRoute} = require('./api/routes/routes');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
@@ -32,6 +32,7 @@ app.use('/api', categoryRoute);
 app.use('/api', userRoute);
 app.use('/api', orderRoute);
 app.use('/api', promoRoute);
+app.use('/api', stripeRoute);
 
 app.use((req, res, next) => {
     const error = new Error('Resource not found');

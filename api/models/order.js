@@ -29,6 +29,7 @@ const OrderSchema = new Schema({
     status: {
         type: String,
         enum: [
+            'processing',
             'reviewing',
             'accepted',
             'dispatched',

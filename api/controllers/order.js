@@ -1,4 +1,5 @@
-const {Order} = require('../models/models');
+const {Order, Product, Promo} = require('../models/models');
+const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
 exports.getOrderById = (req, res) => {
     Order.findOne({_id: req.params.order_id}).select('-__v').exec().then(order => {
@@ -59,16 +60,58 @@ exports.updateStatus = async (req, res) => {
 
 exports.createOrder = async (req, res, next) => {
     try {
-        const order = Order(
+        const products = await Product.find({
+            _id:
+                {$in: req.body.products.map(value => value.product)}
+        })
+            .select('_id price').exec();
+        const order = new Order(
             {
-                products: req.body.products,
+                products: products.map((value, index) => {
+                    return {
+                        product: value._id,
+                        amount: req.body.products[index].amount,
+                        price: value.price
+                    }
+                }),
                 address: req.body.address,
-                status: 'reviewing',
+                status: 'processing',
                 user: req.body.profile.id,
+                promo: req.body.promo,
             }
         );
+        let totalAmount = 0.0;
+        for (let i of products) {
+            totalAmount += i.price;  // Redundant warning in WebStorm: Ignore
+        }
+        const promo = await Promo.findById(req.body.promo).exec();
+        if (!promo)
+            return res.status(400).json(Error('Invalid promo code'));
+        let discount = (promo.discount_percent / 100) * totalAmount;
+        if (discount > promo.discount_upto)
+            discount = promo.discount_upto;
+        totalAmount -= discount;
         await order.save();
-        req.body.order = order;
+        await stripe.customers.create({
+            email: req.body.profile.email,
+            source: req.body.profile.id,
+        });
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: totalAmount,
+            currency: 'inr',
+            description: `Payment of ${totalAmount} by ${req.body.profile.email} at ${Date.now()}`,
+            metadata: {
+                order_id: order._id, customer: {
+                    email: req.body.profile.email,
+                    id: req.body.profile.id,
+                }
+            }
+        });
+        const client_secret = paymentIntent.client_secret;
+        res.result = {
+            publishable_key: process.env.STRIPE_PUBLISHABLE_KEY,
+            client_secret, order,
+        };
         next();
     } catch (e) {
         res.status(400).json(e);
