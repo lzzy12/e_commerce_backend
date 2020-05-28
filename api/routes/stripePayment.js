@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const router = require('express').Router();
-const {Order, User} = require('../models/models');
+const {Order} = require('../models/models');
 const nodemailer = require('nodemailer');
 
 router.post('/stripe_hook', async (req, res, next) => {

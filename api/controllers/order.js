@@ -100,6 +100,7 @@ exports.createOrder = async (req, res, next) => {
             amount: totalAmount,
             currency: 'inr',
             description: `Payment of ${totalAmount} by ${req.body.profile.email} at ${Date.now()}`,
+            setup_future_usage: 'on_session',
             metadata: {
                 order_id: order._id, customer: {
                     email: req.body.profile.email,
