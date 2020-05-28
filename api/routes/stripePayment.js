@@ -23,6 +23,24 @@ router.post('/stripe_hook', async (req, res, next) => {
             case 'payment_intent.created':
                 console.log('Payment initiated');
                 return res.sendStatus(200);
+            case 'payment_intent.payment_failed':
+                await transporter.sendMail({
+                    from: process.env.SMTP_SERVER_USERNAME,
+                    to: customer.email,
+                    subject: `Payment failed for order id ${order_id}`,
+                    body: `Payment failed for order id ${order_id}! 
+                    Please try again after some time or try a different card`
+                });
+                return res.sendStatus(200);
+            case 'payment_intent.cancelled':
+                await transporter.sendMail({
+                    from: process.env.SMTP_SERVER_USERNAME,
+                    to: customer.email,
+                    subject: `Payment failed for order id ${order_id}`,
+                    body: `Payment failed for order id ${order_id}! 
+                    Please try again after some time or try a different card`
+                });
+                return res.sendStatus(200);
             case 'payment_intent.succeeded':
                 await Order.findByIdAndUpdate(order_id,
                     {status: 'reviewing'}, {new: true}).exec();
