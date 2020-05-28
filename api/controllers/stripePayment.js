@@ -2,6 +2,10 @@ const {Order} = require('../models/models');
 const nodemailer = require('nodemailer');
 
 
+function handlePaymentIntent(intent){
+
+}
+
 exports.stripeController = async (req, res, next) => {
     let event = req.body;
     const order_id = event.data.metadata.order_id;
@@ -23,6 +27,8 @@ exports.stripeController = async (req, res, next) => {
                 console.log('Payment initiated');
                 return res.sendStatus(200);
             case 'payment_intent.payment_failed':
+                await Order.findByIdAndUpdate(order_id,
+                    {status: 'cancelled'}, {new: true}).exec();
                 await transporter.sendMail({
                     from: process.env.SMTP_SERVER_USERNAME,
                     to: customer.email,
@@ -32,6 +38,8 @@ exports.stripeController = async (req, res, next) => {
                 });
                 return res.sendStatus(200);
             case 'payment_intent.cancelled':
+                await Order.findByIdAndUpdate(order_id,
+                    {status: 'cancelled'}, {new: true}).exec();
                 await transporter.sendMail({
                     from: process.env.SMTP_SERVER_USERNAME,
                     to: customer.email,
