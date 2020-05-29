@@ -19,8 +19,17 @@ exports.createProduct = (req, res, next) => {
 }
 
 exports.getAll = async (req, res, next) => {
-    res.result.results = await Product.find().limit(res.limits.pageSize).skip(res.limits.startIndex).select('-__v').exec();
-    res.status(200).json(res.result);
+    const orderBy = req.params.orderBy;
+    try {
+        res.result.results = await Product.find()
+            .sort(`${orderBy}`)
+            .limit(res.limits.pageSize)
+            .skip(res.limits.startIndex)
+            .select('-__v').exec();
+        res.status(200).json(res.result);
+    } catch(e){
+        res.status(400).json(e);
+    }
 }
 
 exports.getProductById = (req, res, next) => {
