@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {productController, paginate} = require('../controllers/controller');
+const {productController, paginate, authController} = require('../controllers/controller');
 const {Product} = require('../models/models');
 const multer = require('multer');
 const uuid = require('uuid');
@@ -25,9 +25,14 @@ const upload = multer({
 
 router.get('/products', paginate(Product), productController.getAll);
 
-router.post('/products', upload.array('medias'), productController.createProduct);
+router.post('/products', authController.isAuthenticated,
+    authController.isAdmin, upload.array('medias'), productController.createProduct);
 
 router.get('/products/:productId', productController.getProductById);
 
-router.put('/products/:productId')
+router.put('/products/:productId', authController.isAuthenticated,
+    authController.isAdmin, productController.updateProduct);
+
+router.delete('/products/:productId', authController.isAuthenticated,
+    authController.isAdmin, productController.deleteProduct);
 module.exports = router;

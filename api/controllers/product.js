@@ -19,13 +19,20 @@ exports.createProduct = (req, res, next) => {
 }
 
 exports.getAll = async (req, res, next) => {
-    const orderBy = req.params.orderBy;
+    const orderBy = req.query.orderBy;
+    const category = req.query.category;
+    let find = {};
+    if (category)
+        find = {categories: category}
+    console.log(orderBy);
     try {
-        res.result.results = await Product.find()
+        res.result.results = await Product.find(find)
             .sort(`${orderBy}`)
-            .limit(res.limits.pageSize)
             .skip(res.limits.startIndex)
-            .select('-__v').exec();
+            .select('-__v')
+            .limit(res.limits.pageSize)
+            .populate('categories')
+            .exec();
         res.status(200).json(res.result);
     } catch(e){
         res.status(400).json(e);
@@ -34,7 +41,7 @@ exports.getAll = async (req, res, next) => {
 
 exports.getProductById = (req, res, next) => {
     const id = req.params.productId;
-    Product.findById(id).then(result => {
+    Product.findById(id).populate('categories').then(result => {
         if (result) { res.status(200).json(result); }
         else {
             res.status(400).send();
@@ -50,6 +57,16 @@ exports.updateProduct = async (req, res, next) => {
         const id = req.params.productId;
         const updatedDoc = await Product.findOneAndUpdate({_id: id}, req.body, {new: true});
         res.status(201).json(updatedDoc);
+    } catch(e){
+        res.status(400).json(e);
+    }
+}
+
+exports.deleteProduct = async (req, res, next) => {
+    try {
+        const id = req.params.productId;
+        await Product.findByIdAndDelete(id).exec();
+        res.sendStatus(204);
     } catch(e){
         res.status(400).json(e);
     }

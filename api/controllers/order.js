@@ -27,7 +27,7 @@ exports.getAllOrder = async (req, res) => {
 }
 
 exports.getAllOrderByUser = (req, res) => {
-    Order.find({user: req.body.profile.id}).select('-__v').exec().then(orders => {
+    Order.find({user: req.body.profile.id}).select('-__v').populate('promo').exec().then(orders => {
         res.status(200).json(orders);
     }).catch(error => {
         res.status(500).json(error);
