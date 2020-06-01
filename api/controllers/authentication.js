@@ -7,7 +7,7 @@ function getToken(user) {
         email: user.email,
         id: user._id,
     }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "6h"
+        expiresIn: (6 * 60 * 60)
     });
 }
 
@@ -16,20 +16,20 @@ exports.isAuthenticated = (req, res, next) => {
         const token = req.headers.authorization.split(' ')[1];
         req.body.profile = jwt.verify(token, process.env.JWT_SECRET_KEY);
         next();
-    } catch(e){
-        res.status(403).json({error: {message: "Not Authenticated"}});
+    } catch (e) {
+        res.status(403).json({ error: { message: "Not Authenticated" } });
     }
 }
 // Checks if user is an admin; always calls next(); req.body.profile.admin
 // contains a boolean value indicating if user is an admin
 exports.checkAdmin = (req, res, next) => {
     try {
-        User.findOne({_id: req.body.profile.id}).select('role').exec((err, user) =>{
+        User.findOne({ _id: req.body.profile.id }).select('role').exec((err, user) => {
             if (err) return res.status(400).json(err);
             req.body.profile.admin = (user.role === 1);
             next();
         });
-    } catch(error) {
+    } catch (error) {
         res.status(400).json(error);
     }
 }
@@ -39,16 +39,16 @@ exports.checkAdmin = (req, res, next) => {
 exports.isAdmin = (req, res, next) => {
     try {
         console.log(req.body.profile.id);
-        User.findOne({_id: req.body.profile.id}).select('role').exec((err, user) =>{
+        User.findOne({ _id: req.body.profile.id }).select('role').exec((err, user) => {
             if (err) return res.status(400).json(err);
             if (user) {
                 if (user.role === 1) {
                     req.body.profile.admin = true;
                     next();
-                } else res.status(403).json({error: {message: "Permission denied"}});
+                } else res.status(403).json({ error: { message: "Permission denied" } });
             }
         });
-    } catch(error) {
+    } catch (error) {
         res.status(400).json(error);
     }
 }
@@ -79,13 +79,14 @@ exports.registerUser = (req, res, next) => {
                     });
                     user.save(err => {
                         if (err) return res.status(400).json(err);
-                        const {email, first_name, last_name, phone_num, addresses} = user;
+                        const { email, first_name, last_name, phone_num, addresses } = user;
                         res.status(201).json({
                             token: getToken(user),
+                            expiresIn: (6 * 60 * 60),
                             email, first_name, last_name, phone_num, addresses
                         });
                     });
-                } catch(e){
+                } catch (e) {
                     res.status(400).json(e);
                 }
             });
@@ -101,9 +102,10 @@ exports.login = (req, res, next) => {
         if (user) {
             bcrypt.compare(req.body.password, user.password, (err, result) => {
                 if (result) {
-                    const {email, first_name, last_name, phone_num, addresses} = user;
+                    const { email, first_name, last_name, phone_num, addresses } = user;
                     res.status(201).json({
                         token: getToken(user),
+                        expiresIn: (6 * 60 * 60),
                         email, first_name, last_name, phone_num, addresses
                     });
                 } else {

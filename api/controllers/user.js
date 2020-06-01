@@ -41,3 +41,15 @@ exports.getAllUsers = async (req, res, next) => {
         res.status(500).json(e);
     }
 }
+
+exports.getUser = async (req, res, next) => {
+    try {
+        const user = await User.findOne({ email: req.body.profile.email }).exec();
+        const { email, first_name, last_name, phone_num, addresses } = user;
+        res.status(200).json({
+            email, first_name, last_name, phone_num, addresses
+        });
+    } catch (e) {
+        res.status(400).json(e);
+    }
+}

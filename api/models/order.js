@@ -2,6 +2,16 @@ const mongoose = require('mongoose');
 const {Schema, Types} = mongoose;
 const {addressSchema} = require('./address');
 
+const orderStatus = {
+            processing: 0,
+            reviewing: 1,
+            accepted: 2,
+            dispatche: 3,
+            outForDelivery: 4,
+            delivered: 5,
+            cancelled: 6,
+}
+
 const CartProductSchema = new Schema({
     product: {
         type: Types.ObjectId,
@@ -27,16 +37,10 @@ const OrderSchema = new Schema({
         required: true
     },
     status: {
-        type: String,
-        enum: [
-            'processing',
-            'reviewing',
-            'accepted',
-            'dispatched',
-            'outForDelivery',
-            'delivered',
-            'cancelled',
-        ]
+        type: Number,
+        min: orderStatus.processing,
+        max: orderStatus.cancelled,
+        default: orderStatus.processing
     },
     user: {
         type: Types.ObjectId,
@@ -46,6 +50,10 @@ const OrderSchema = new Schema({
         type: Types.ObjectId,
         ref: 'Promo'
     },
+    trackingId: {
+        type: String,
+        required: false,
+    },
 }, {timestamps: true});
 
-module.exports = {Order: mongoose.model('Order', OrderSchema), OrderSchema, CartProductSchema};
+module.exports = {Order: mongoose.model('Order', OrderSchema), OrderSchema, CartProductSchema, orderStatus};

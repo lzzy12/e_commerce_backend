@@ -8,6 +8,8 @@ router.post('/user/login', authController.login);
 
 router.get('/users', authController.isAuthenticated, authController.isAdmin, paginate(User), userController.getAllUsers);
 
+router.get('/user', authController.isAuthenticated, userController.getUser);
+
 router.post('/user/address', authController.isAuthenticated, userController.addAddress);
 
 router.put('/user/address', authController.isAuthenticated, userController.editAddress);

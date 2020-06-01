@@ -30,6 +30,10 @@ const addressSchema = new Schema({
         required: true,
         match: phone_regex,
     },
+    country:{
+        type: String,
+        required: true,
+    },
     address_type: {
         type: String,
         enum: ['home', 'office'],

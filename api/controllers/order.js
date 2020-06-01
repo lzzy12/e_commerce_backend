@@ -1,4 +1,5 @@
 const {Order, Product, Promo} = require('../models/models');
+const {orderStatus} = require('../models/order');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
 exports.getOrderById = (req, res) => {
@@ -43,7 +44,7 @@ exports.updateStatus = async (req, res) => {
                 res.status(201).json(updatedOrder);
             else
                 res.status(404).json({error: {message: "No such order found"}});
-        } else if (req.body.status === "cancelled") {
+        } else if (req.body.status === orderStatus.cancelled) {
             const updatedOrder = await Order.findOneAndUpdate({user: req.body.profile.id, _id: req.params.order_id},
                 {$set: {status: req.body.status}}, {new: true});
             if (updatedOrder)
@@ -75,7 +76,7 @@ exports.createOrder = async (req, res, next) => {
                     }
                 }),
                 address: req.body.address,
-                status: 'processing',
+                status: orderStatus.processing,
                 user: req.body.profile.id,
                 promo: req.body.promo,
             }
@@ -92,7 +93,7 @@ exports.createOrder = async (req, res, next) => {
             discount = promo.discount_upto;
         totalAmount -= discount;
         await order.save();
-        await stripe.customers.create({
+        await stripe.customers.create({ 
             email: req.body.profile.email,
             source: req.body.profile.id,
         });
