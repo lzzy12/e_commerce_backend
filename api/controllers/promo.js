@@ -27,7 +27,7 @@ exports.createPromo = (req, res) => {
         description: req.body.description,
         discount_upto: req.body.discount_upto,
         expiryDate: req.body.expiryDate,
-        pic: `/uploads/${req.file.filename}`
+        pic: `/api/uploads/${req.file.filename}`
     });
     promo.save(err => {
         if (err) return res.status(400).json(err);

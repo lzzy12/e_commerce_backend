@@ -1,25 +1,32 @@
-const {Order, Product, Promo} = require('../models/models');
-const {orderStatus} = require('../models/order');
+const { Order, Product, Promo } = require('../models/models');
+const { orderStatus } = require('../models/order');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
-exports.getOrderById = (req, res) => {
-    Order.findOne({_id: req.params.order_id}).select('-__v').exec().then(order => {
+exports.getOrderById = async (req, res) => {
+    try {
+        const order = await Order.findOne({ _id: req.params.order_id }).select('-__v')
+            .populate('promo products.product')
+            .exec();
         if (order) {
             res.status(200).json(order);
         } else {
-            res.status(404).json({error: {message: "Order not found"}});
+            res.status(404).json({ error: { message: "Order not found" } });
         }
-    }).catch(e => {
+    }
+    catch (e) {
         res.status(500).json(e);
-    });
+    }
 }
 
 exports.getAllOrder = async (req, res) => {
     try {
         if (req.body.profile.admin === true) {
-            res.result.results = await Order.find().limit(res.limits.pageSize).skip(res.limits.startIndex).select('-__v').exec();
+            res.result.results = await Order.find().limit(res.limits.pageSize)
+                .skip(res.limits.startIndex)
+                .select('-__v')
+                .populate('promo products.product').exec();
         } else {
-            res.result.results = await Order.find({user: req.body.profile.id}).select('-__v').exec();
+            res.result.results = await Order.find({ user: req.body.profile.id }).select('-__v').exec();
         }
         res.status(200).json(res.result);
     } catch (error) {
@@ -28,7 +35,7 @@ exports.getAllOrder = async (req, res) => {
 }
 
 exports.getAllOrderByUser = (req, res) => {
-    Order.find({user: req.body.profile.id}).select('-__v').populate('promo').exec().then(orders => {
+    Order.find({ user: req.body.profile.id }).select('-__v').populate('promo').exec().then(orders => {
         res.status(200).json(orders);
     }).catch(error => {
         res.status(500).json(error);
@@ -38,21 +45,21 @@ exports.getAllOrderByUser = (req, res) => {
 exports.updateStatus = async (req, res) => {
     try {
         if (req.body.admin) {
-            const updatedOrder = await Order.findOneAndUpdate({_id: req.params.order_id},
-                {$set: {status: req.body.status}}, {new: true});
+            const updatedOrder = await Order.findOneAndUpdate({ _id: req.params.order_id },
+                { $set: { status: req.body.status } }, { new: true });
             if (updatedOrder)
                 res.status(201).json(updatedOrder);
             else
-                res.status(404).json({error: {message: "No such order found"}});
+                res.status(404).json({ error: { message: "No such order found" } });
         } else if (req.body.status === orderStatus.cancelled) {
-            const updatedOrder = await Order.findOneAndUpdate({user: req.body.profile.id, _id: req.params.order_id},
-                {$set: {status: req.body.status}}, {new: true});
+            const updatedOrder = await Order.findOneAndUpdate({ user: req.body.profile.id, _id: req.params.order_id },
+                { $set: { status: req.body.status } }, { new: true });
             if (updatedOrder)
                 res.status(201).json(updatedOrder);
             else
-                res.status(404).json({error: {message: "No such order found"}});
+                res.status(404).json({ error: { message: "No such order found" } });
         } else {
-            res.status(400).json({error: {message: "Not an admin neither a cancel operation!"}});
+            res.status(400).json({ error: { message: "Not an admin neither a cancel operation!" } });
         }
     } catch (e) {
         res.status(500).json(e);
@@ -63,7 +70,7 @@ exports.createOrder = async (req, res, next) => {
     try {
         const products = await Product.find({
             _id:
-                {$in: req.body.products.map(value => value.product)}
+                { $in: req.body.products.map(value => value.product) }
         })
             .select('_id price').exec();
         const order = new Order(
@@ -93,7 +100,7 @@ exports.createOrder = async (req, res, next) => {
             discount = promo.discount_upto;
         totalAmount -= discount;
         await order.save();
-        await stripe.customers.create({ 
+        await stripe.customers.create({
             email: req.body.profile.email,
             source: req.body.profile.id,
         });

@@ -1,8 +1,8 @@
 const { Product } = require('../models/models');
 
 
-exports.createProduct = (req, res, next) => {
-    const product = new Product({
+exports.createProduct = async (req, res, next) => {
+    let product = new Product({
         ...req.body,
         medias: req.files.map((value) =>{
             return {
@@ -11,11 +11,13 @@ exports.createProduct = (req, res, next) => {
             }
         })
     });
-    product.save().then(result => {
-        res.status(201).json(product);
-    }).catch(error => {
-        res.status(400).json(error);
-    });
+    try{
+    await product.save();
+    product = await Product.populate(product, {path: 'categories'});
+    res.status(201).json(product);
+    } catch(e){
+        res.status(400).json(e);
+    }
 }
 
 exports.getAll = async (req, res, next) => {
@@ -24,7 +26,6 @@ exports.getAll = async (req, res, next) => {
     let find = {};
     if (category)
         find = {categories: category}
-    console.log(orderBy);
     try {
         res.result.results = await Product.find(find)
             .sort(`${orderBy}`)
@@ -55,7 +56,8 @@ exports.getProductById = (req, res, next) => {
 exports.updateProduct = async (req, res, next) => {
     try {
         const id = req.params.productId;
-        const updatedDoc = await Product.findOneAndUpdate({_id: id}, req.body, {new: true});
+        let updatedDoc = await Product.findOneAndUpdate({_id: id}, req.body, {new: true});
+        updatedDoc = await Product.populate(updatedDoc, 'categories');
         res.status(201).json(updatedDoc);
     } catch(e){
         res.status(400).json(e);

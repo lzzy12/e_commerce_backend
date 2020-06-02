@@ -38,12 +38,12 @@ exports.checkAdmin = (req, res, next) => {
 // request flow with 403 status code in response; calls next if user is admin
 exports.isAdmin = (req, res, next) => {
     try {
-        console.log(req.body.profile.id);
         User.findOne({ _id: req.body.profile.id }).select('role').exec((err, user) => {
             if (err) return res.status(400).json(err);
             if (user) {
                 if (user.role === 1) {
                     req.body.profile.admin = true;
+                    console.log(req.body.profile.id);
                     next();
                 } else res.status(403).json({ error: { message: "Permission denied" } });
             }
