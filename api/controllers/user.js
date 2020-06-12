@@ -6,8 +6,9 @@ exports.addOrder = async (req, res, next) => {
             {_id: req.body.profile.id},
             {$push: {orders: req.result.order}},
         ).exec();
-        res.status(200).json(res.result);
+        res.status(200).json(req.result);
     } catch(e){
+        console.log(e);
         res.status(400).json(e);
     }
 }

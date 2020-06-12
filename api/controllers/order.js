@@ -1,4 +1,4 @@
-const { Order, Product, Promo } = require('../models/models');
+const { Order, Product, Promo, User } = require('../models/models');
 const { orderStatus } = require('../models/order');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
@@ -73,6 +73,8 @@ exports.createOrder = async (req, res, next) => {
                 { $in: req.body.products.map(value => value.product) }
         })
             .select('_id price').exec();
+        if (products.length < req.body.products.length)
+            return res.status(400).json({error: {message: 'One or more product ids are invalid'}});
         const order = new Order(
             {
                 products: products.map((value, index) => {
@@ -92,37 +94,53 @@ exports.createOrder = async (req, res, next) => {
         for (let i of products) {
             totalAmount += i.price;  // Redundant warning in WebStorm: Ignore
         }
-        const promo = await Promo.findById(req.body.promo).exec();
-        if (!promo)
-            return res.status(400).json(Error('Invalid promo code'));
-        let discount = (promo.discount_percent / 100) * totalAmount;
-        if (discount > promo.discount_upto)
-            discount = promo.discount_upto;
-        totalAmount -= discount;
+        if (req.body.promo) {
+            try {
+                const promo = await Promo.findById(req.body.promo).exec();
+                if (!promo) {
+                    return res.status(400).json(Error('Invalid promo code'));
+                }
+                let discount = (promo.discount_percent / 100) * totalAmount;
+                if (discount > promo.discount_upto)
+                    discount = promo.discount_upto;
+                totalAmount -= discount;
+            } catch (e) {
+                return res.status(400).json(e);
+            }
+        }
+
         await order.save();
-        await stripe.customers.create({
-            email: req.body.profile.email,
-            source: req.body.profile.id,
-        });
+        const user = await User.findById(req.body.profile.id)
+            .select('email _id first_name last_name phone_num').exec();
+        let customer = await stripe.customers.retrieve(user._id.toString());
+        if (!customer) {
+            customer = await stripe.customers.create({
+                email: user.email,
+                id: user._id.toString(),
+                name: user.first_name + user.last_name,
+                phone: user.phone_num,
+            });
+        }
         const paymentIntent = await stripe.paymentIntents.create({
             amount: totalAmount,
             currency: 'inr',
             description: `Payment of ${totalAmount} by ${req.body.profile.email} at ${Date.now()}`,
             setup_future_usage: 'on_session',
+            customer: customer.id,
             metadata: {
-                order_id: order._id, customer: {
-                    email: req.body.profile.email,
-                    id: req.body.profile.id,
-                }
+                order_id: order._id.toString(),
+                customer_id: req.body.profile.id,
+                customer_email: req.body.profile.email
             }
         });
         const client_secret = paymentIntent.client_secret;
-        res.result = {
+        req.result = {
             publishable_key: process.env.STRIPE_PUBLISHABLE_KEY,
             client_secret, order,
         };
         next();
     } catch (e) {
+        console.log(e);
         res.status(400).json(e);
     }
 }
