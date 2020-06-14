@@ -71,8 +71,7 @@ exports.createOrder = async (req, res, next) => {
         const products = await Product.find({
             _id:
                 { $in: req.body.products.map(value => value.product) }
-        })
-            .select('_id price').exec();
+        }).populate('categories').exec();
         if (products.length < req.body.products.length)
             return res.status(400).json({error: {message: 'One or more product ids are invalid'}});
         const order = new Order(
@@ -90,6 +89,7 @@ exports.createOrder = async (req, res, next) => {
                 promo: req.body.promo,
             }
         );
+
         let totalAmount = 0.0;
         for (let i of products) {
             totalAmount += i.price;  // Redundant warning in WebStorm: Ignore
@@ -133,10 +133,22 @@ exports.createOrder = async (req, res, next) => {
                 customer_email: req.body.profile.email
             }
         });
+        order.products = order.products.map((value, i) => {
+            return products[i];
+        });
         const client_secret = paymentIntent.client_secret;
         req.result = {
             publishable_key: process.env.STRIPE_PUBLISHABLE_KEY,
-            client_secret, order,
+            client_secret, order:{
+                products: order.products.map((value, i) => {
+                    return products[i];
+                }),
+                _id: order._id,
+                status: order.status,
+                address: order.address,
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt
+            },
         };
         next();
     } catch (e) {
