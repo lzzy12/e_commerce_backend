@@ -122,7 +122,7 @@ exports.createOrder = async (req, res, next) => {
             });
         }
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: totalAmount,
+            amount: totalAmount * 100,  // In Indian paise
             currency: 'inr',
             description: `Payment of ${totalAmount} by ${req.body.profile.email} at ${Date.now()}`,
             setup_future_usage: 'on_session',
