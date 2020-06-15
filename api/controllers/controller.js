@@ -5,5 +5,6 @@ module.exports = {
     userController: require('./user'),
     orderController: require('./order'),
     promoController: require('./promo'),
+    stripeController: require('./stripePayment'),
     paginate: require('./pagination'),
 }

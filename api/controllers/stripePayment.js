@@ -4,8 +4,10 @@ const {orderStatus} = require('../models/order');
 
 exports.stripeController = async (req, res, next) => {
     let event = req.body;
-    const order_id = event.data.metadata.order_id;
-    const customer = event.data.metadata.customer;
+    const metadata = event.data.object.metadata;
+    const order_id = metadata.order_id;
+    const email = metadata.customer_email;
+    // const customer_id = metadata.customer_id;
     const transporter = nodemailer.createTransport(
         {
             host: process.env.SMTP_SERVER_HOST,
@@ -27,7 +29,7 @@ exports.stripeController = async (req, res, next) => {
                     {status: orderStatus.cancelled}, {new: true}).exec();
                 await transporter.sendMail({
                     from: process.env.SMTP_SERVER_USERNAME,
-                    to: customer.email,
+                    to: email,
                     subject: `Payment failed for order id ${order_id}`,
                     body: `Payment failed for order id ${order_id}! 
                     Please try again after some time or try a different card`
@@ -38,7 +40,7 @@ exports.stripeController = async (req, res, next) => {
                     {status: orderStatus.cancelled}, {new: true}).exec();
                 await transporter.sendMail({
                     from: process.env.SMTP_SERVER_USERNAME,
-                    to: customer.email,
+                    to: email,
                     subject: `Payment failed for order id ${order_id}`,
                     body: `Payment failed for order id ${order_id}! 
                     Please try again after some time or try a different card`
@@ -50,7 +52,7 @@ exports.stripeController = async (req, res, next) => {
 
                 await transporter.sendMail({
                     from: process.env.SMTP_SERVER_USERNAME,
-                    to: customer.email,
+                    to: email,
                     subject: `Payment successful for order id ${order_id}`,
                     body: `We have received your payment for the order id ${order_id}. 
                 Your order is now being reviewed. 

@@ -83,7 +83,8 @@ exports.registerUser = (req, res, next) => {
                         res.status(201).json({
                             token: getToken(user),
                             expiresIn: (6 * 60 * 60),
-                            email, first_name, last_name, phone_num, addresses
+                            email, first_name, last_name, phone_num, addresses,
+                            user_id: user._id,
                         });
                     });
                 } catch (e) {
@@ -106,7 +107,8 @@ exports.login = (req, res, next) => {
                     res.status(201).json({
                         token: getToken(user),
                         expiresIn: (6 * 60 * 60),
-                        email, first_name, last_name, phone_num, addresses
+                        email, first_name, last_name, phone_num, addresses,
+                        user_id: user._id,
                     });
                 } else {
                     res.status(403).json({
