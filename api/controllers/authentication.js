@@ -1,6 +1,10 @@
 const { User } = require('../models/models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+
+const google_client = new OAuth2Client(process.env.OAUTH_CLIENT_ID_BACKEND);
+
 
 function getToken(user) {
     return jwt.sign({
@@ -10,6 +14,7 @@ function getToken(user) {
         expiresIn: (6 * 60 * 60)
     });
 }
+
 
 exports.isAuthenticated = (req, res, next) => {
     try {
@@ -61,6 +66,9 @@ exports.registerUser = (req, res, next) => {
                 message: 'Email id already exists!'
             });
         } else {
+            if (!req.body.password || req.body.password.length < 6) {
+                return res.status(400).json({ error: { message: 'Password validation failed!' } });
+            }
             bcrypt.hash(req.body.password, 15, (err, hash) => {
                 if (err) {
                     return res.status(500).json(err);
@@ -101,6 +109,9 @@ exports.registerUser = (req, res, next) => {
 exports.login = (req, res, next) => {
     User.findOne({ email: req.body.email }).exec().then(user => {
         if (user) {
+            if (!req.body.password) {
+                return res.status(400).json({ error: { message: 'Invalid credentials' } });
+            }
             bcrypt.compare(req.body.password, user.password, (err, result) => {
                 if (result) {
                     const { email, first_name, last_name, phone_num, addresses } = user;
@@ -128,4 +139,59 @@ exports.login = (req, res, next) => {
             });
         }
     })
+}
+
+exports.googleAuth = async (req, res, next) => {
+    try {
+        const ticket = await google_client.verifyIdToken({
+            idToken: req.body.token,
+            audience: process.env.OAUTH_CLIENT_ID_FRONTEND,
+        });
+        const payload = ticket.getPayload();
+        const user = await User.findOne({ email: payload.email}).exec();
+        if (user) {
+            // LOGIN USER
+            const { email, first_name, last_name, phone_num, addresses } = user;
+            res.status(201).json({
+                token: getToken(user),
+                expiresIn: (6 * 60 * 60),
+                email, first_name, last_name, phone_num, addresses,
+                user_id: user._id,
+                profile_pic: payload.picture
+            });
+        } else {
+            // Creates new user
+            let msg = '';
+            if (!payload.email)
+                msg = 'Email not found in the token';
+            if (!payload.given_name)
+                msg = 'First name not found in the token';
+            if (!payload.family_name)
+                msg = 'Last name not found in the token';
+            if (msg.length > 0)
+                return res.status(400).json({ error: { message: msg } });
+            const user = User({
+                email: payload.email,
+                first_name: payload.given_name,
+                last_name: payload.family_name,
+                profile_pic: payload.picture,
+            });
+            const result = await user.save();
+            if (result) {
+                const { email, first_name, last_name, phone_num, addresses } = user;
+                res.status(201).json({
+                    token: getToken(user),
+                    expiresIn: (6 * 60 * 60),
+                    email, first_name, last_name, phone_num, addresses,
+                    user_id: user._id,
+                    profile_pic: payload.picture
+                });
+            } else{
+                res.status(500).json({ error: { message: 'Something went wrong. Unable to sign in!' } });
+            }
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(403).json({ error: { message: 'Something went wrong. Unable to sign in!' } });
+    }
 }

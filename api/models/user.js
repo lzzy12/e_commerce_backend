@@ -21,10 +21,11 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    profile_pic: String,
+    
     password: {
         type: String,
         minlength: 6,
-        required: true,
     },
     phone_num: {
         type: String,
