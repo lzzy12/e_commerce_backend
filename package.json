@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/lzzy12/e_commerce_backend#readme",
   "dependencies": {
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "express": "^4.17.1",
     "google-auth-library": "^6.0.1",
     "jsonwebtoken": "^8.5.1",
